@@ -1,0 +1,121 @@
+package handlers
+
+import (
+	"context"
+	"fmt"
+	"github.com/melkomukovki/LockBox/api/pb"
+	"github.com/melkomukovki/LockBox/internal/models"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)
+
+type SecretController struct {
+	pb.UnimplementedSecretServiceServer
+	service models.ISecretService
+}
+
+func NewSecretController(service models.ISecretService) *SecretController {
+	return &SecretController{service: service}
+}
+
+func (s *SecretController) Store(ctx context.Context, request *pb.StoreRequest) (*pb.StoreResponse, error) {
+	userId, ok := ctx.Value("userId").(int)
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	secret := &models.Secret{
+		Name:        request.Secret.Name,
+		UserID:      userId,
+		Description: request.Secret.Description,
+		Type:        models.SecretType(request.Secret.Type),
+		Data:        request.Secret.Data,
+	}
+
+	secretId, err := s.service.CreateSecret(ctx, secret)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &pb.StoreResponse{Message: "secret created", Id: int64(secretId)}, nil
+}
+
+func (s *SecretController) List(ctx context.Context, request *pb.ListRequest) (*pb.ListResponse, error) {
+	userId, ok := ctx.Value("userId").(int)
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	secrets, err := s.service.GetAllSecrets(ctx, userId)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	var pbSecrets []*pb.Secret
+	for _, secret := range secrets {
+		pbSecret := &pb.Secret{
+			Id:          int64(secret.ID),
+			Name:        secret.Name,
+			Description: secret.Description,
+			Type:        string(secret.Type),
+			Data:        secret.Data,
+		}
+		pbSecrets = append(pbSecrets, pbSecret)
+	}
+	return &pb.ListResponse{Secrets: pbSecrets}, nil
+}
+
+func (s *SecretController) Delete(ctx context.Context, request *pb.DeleteRequest) (*pb.DeleteResponse, error) {
+	userId, ok := ctx.Value("userId").(int)
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	if err := s.service.DeleteSecret(ctx, int(request.Id), userId); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	return &pb.DeleteResponse{Message: "secret deleted"}, nil
+}
+
+func (s *SecretController) Update(ctx context.Context, request *pb.UpdateRequest) (*pb.UpdateResponse, error) {
+	userId, ok := ctx.Value("userId").(int)
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	secret := &models.Secret{
+		ID:          int(request.Secret.Id),
+		Name:        request.Secret.Name,
+		Description: request.Secret.Description,
+		Type:        models.SecretType(request.Secret.Type),
+		Data:        request.Secret.Data,
+	}
+
+	if err := s.service.UpdateSecret(ctx, secret, userId); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	return &pb.UpdateResponse{Message: "secret updated"}, nil
+}
+
+func (s *SecretController) Get(ctx context.Context, request *pb.GetRequest) (*pb.GetResponse, error) {
+	userId, ok := ctx.Value("userId").(int)
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	fmt.Printf("Request id: %d\n", request.Id)
+	secret, err := s.service.GetSecret(ctx, int(request.Id), userId)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	pbSecret := &pb.Secret{
+		Id:          int64(secret.ID),
+		Name:        secret.Name,
+		Description: secret.Description,
+		Type:        string(secret.Type),
+		Data:        secret.Data,
+	}
+
+	return &pb.GetResponse{Secret: pbSecret}, nil
+}
