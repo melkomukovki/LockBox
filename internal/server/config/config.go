@@ -1,17 +1,14 @@
+// Package config содержит описание и методы для работы с конфигом сервиса
 package config
 
 import (
-	"github.com/spf13/viper"
 	"time"
+
+	"github.com/spf13/viper"
 )
 
-// Flag vars
-// TODO: move to main
-//var (
-//	configPath = flag.String("config", "config/config.yaml", "path to config file")
-//)
-
 type (
+	// Config - общая структура конфига
 	Config struct {
 		Server   ServerConfig   `mapstructure:"server"`
 		Postgres PostgresConfig `mapstructure:"database"`
@@ -19,11 +16,13 @@ type (
 		Log      LogConfig      `mapstructure:"log"`
 	}
 
+	// ServerConfig параметры относящиеся к запуску сервера
 	ServerConfig struct {
 		Host string `mapstructure:"host"`
 		Port int    `mapstructure:"port"`
 	}
 
+	// PostgresConfig параметры необходимые для работы с базой данных
 	PostgresConfig struct {
 		Host     string `mapstructure:"host"`
 		Port     int    `mapstructure:"port"`
@@ -32,16 +31,19 @@ type (
 		Database string `mapstructure:"database"`
 	}
 
+	// AuthConfig параметры необходимые для работы JWT менеджера
 	AuthConfig struct {
 		AccessTokenTTL time.Duration `mapstructure:"access_token_ttl"`
 		SigningKey     string        `mapstructure:"signing_key"`
 	}
 
+	// LogConfig параметры для конфигурации логгера
 	LogConfig struct {
 		Level string `mapstructure:"level"`
 	}
 )
 
+// New функция для получения экземпляра конфига
 func New(path string) (*Config, error) {
 	viper.SetConfigFile(path)
 	viper.SetConfigType("yaml")

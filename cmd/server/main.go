@@ -35,7 +35,6 @@ func init() {
 	log.Logger = zerolog.New(os.Stdout).With().Timestamp().Logger()
 }
 
-// TODO: add log level
 func main() {
 	printInfo()
 
@@ -46,6 +45,8 @@ func main() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to load config file")
 	}
+	setLogLevel(cfg.Log.Level)
+
 	log.Info().Msg("config loaded")
 	log.Debug().Msgf("config: %+v", cfg)
 
@@ -91,7 +92,6 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	// TODO: rewrite BUG
 	go func() {
 		err := srv.Stop(ctx)
 		if err != nil {
@@ -104,4 +104,23 @@ func printInfo() {
 	fmt.Printf("Version: %s\n", buildVersion)
 	fmt.Printf("Commit: %s\n", buildCommit)
 	fmt.Printf("Build date: %s\n", buildDate)
+}
+
+func setLogLevel(level string) {
+	switch level {
+	case "debug":
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	case "info":
+		zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	case "warn":
+		zerolog.SetGlobalLevel(zerolog.WarnLevel)
+	case "error":
+		zerolog.SetGlobalLevel(zerolog.ErrorLevel)
+	case "fatal":
+		zerolog.SetGlobalLevel(zerolog.FatalLevel)
+	case "panic":
+		zerolog.SetGlobalLevel(zerolog.PanicLevel)
+	default:
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	}
 }

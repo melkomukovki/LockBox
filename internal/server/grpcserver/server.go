@@ -3,25 +3,29 @@ package grpcserver
 import (
 	"context"
 	"fmt"
+	"net"
+	"time"
+
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
+	"github.com/rs/zerolog/log"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+
 	"github.com/melkomukovki/LockBox/api/pb"
 	"github.com/melkomukovki/LockBox/internal/models"
 	"github.com/melkomukovki/LockBox/internal/server/config"
 	"github.com/melkomukovki/LockBox/internal/server/grpcserver/handlers"
 	"github.com/melkomukovki/LockBox/internal/server/grpcserver/interceptors"
 	"github.com/melkomukovki/LockBox/pkg/auth"
-	"github.com/rs/zerolog/log"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
-	"net"
-	"time"
 )
 
+// Server описание структуры сервера
 type Server struct {
 	grpcServer *grpc.Server
 	config     *config.ServerConfig
 }
 
+// New конструктор для получения экземпляра сервера
 func New(cfg *config.ServerConfig, userService models.IUserService, secretService models.ISecretService, jwtManager auth.JWTManager) *Server {
 
 	authInterceptor := interceptors.NewAuthInterceptor(jwtManager)
@@ -46,6 +50,7 @@ func New(cfg *config.ServerConfig, userService models.IUserService, secretServic
 	return &Server{grpcServer: server, config: cfg}
 }
 
+// Run запуск сервера
 func (s *Server) Run() error {
 	address := fmt.Sprintf("%s:%d", s.config.Host, s.config.Port)
 	lis, err := net.Listen("tcp", address)
@@ -55,6 +60,7 @@ func (s *Server) Run() error {
 	return s.grpcServer.Serve(lis)
 }
 
+// Stop остановка сервера. Реализована поддержка graceful shutdown
 func (s *Server) Stop(ctx context.Context) error {
 	ok := make(chan struct{})
 	go func() {

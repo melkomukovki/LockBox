@@ -3,24 +3,29 @@ package handlers
 import (
 	"context"
 	"errors"
+	"strconv"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"github.com/melkomukovki/LockBox/api/pb"
 	"github.com/melkomukovki/LockBox/internal/models"
 	"github.com/melkomukovki/LockBox/pkg/auth"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-	"strconv"
 )
 
+// UserController описание структуры контроллера
 type UserController struct {
 	pb.UnimplementedUserServiceServer
 	service    models.IUserService
 	jwtManager auth.JWTManager
 }
 
+// NewUserController конструктор для получения экземпляра контроллера
 func NewUserController(service models.IUserService, jwtManager auth.JWTManager) *UserController {
 	return &UserController{service: service, jwtManager: jwtManager}
 }
 
+// SignUp - функция обработчик запросов на регистрацию пользователей
 func (u *UserController) SignUp(ctx context.Context, request *pb.SignUpRequest) (*pb.SignUpResponse, error) {
 	_, err := u.service.RegisterUser(ctx, request.Login, request.Password)
 	if err != nil {
@@ -32,6 +37,7 @@ func (u *UserController) SignUp(ctx context.Context, request *pb.SignUpRequest) 
 	return &pb.SignUpResponse{Message: "success"}, nil
 }
 
+// SignIn - функция обработчик запросов на аутентификацию пользователей
 func (u *UserController) SignIn(ctx context.Context, request *pb.SignInRequest) (*pb.SignInResponse, error) {
 	userId, err := u.service.AuthUser(ctx, request.Login, request.Password)
 	if err != nil {

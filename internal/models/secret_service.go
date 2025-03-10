@@ -2,7 +2,7 @@ package models
 
 import "context"
 
-// ISecretService - secret service interface
+// ISecretService - интерфейс описывающий методы, необходимые для реализации на стороне сервиса
 type ISecretService interface {
 	CreateSecret(ctx context.Context, secret *Secret) (int, error)
 	UpdateSecret(ctx context.Context, secret *Secret, userId int) error

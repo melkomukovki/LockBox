@@ -8,16 +8,19 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
+// JWTManager интерфейс описывающий методы работы с JWT
 type JWTManager interface {
 	NewJWT(userId string) (string, time.Duration, error)
 	ParseJWT(token string) (int, error)
 }
 
+// Manager описание модели JWT менеджера
 type Manager struct {
-	signingKey string
-	ttl        time.Duration
+	signingKey string        // Key for signing JWT token
+	ttl        time.Duration // TTL for access token
 }
 
+// NewManager позволяет получить экземлпяр JWT менеджера
 func NewManager(signingKey string, ttl time.Duration) (*Manager, error) {
 	if signingKey == "" {
 		return nil, fmt.Errorf("signing key is empty")
@@ -30,6 +33,7 @@ func NewManager(signingKey string, ttl time.Duration) (*Manager, error) {
 	return &Manager{signingKey: signingKey, ttl: ttl}, nil
 }
 
+// NewJWT позволяет создать новый access токен
 func (m *Manager) NewJWT(userId string) (string, time.Duration, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
 		ExpiresAt: time.Now().Add(m.ttl).Unix(),
@@ -40,6 +44,7 @@ func (m *Manager) NewJWT(userId string) (string, time.Duration, error) {
 	return tokenString, m.ttl, err
 }
 
+// ParseJWT парсит access токен, проверяет его корректность и возвращает id пользователя из токена
 func (m *Manager) ParseJWT(accessToken string) (int, error) {
 	token, err := jwt.Parse(accessToken, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

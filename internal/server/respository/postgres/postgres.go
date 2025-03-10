@@ -1,3 +1,5 @@
+// Package postgres содержит код реализации уровня репозитория
+// Для баз данных PostgreSQL
 package postgres
 
 import (
@@ -10,6 +12,7 @@ import (
 	"time"
 )
 
+// NewPgClient принимает параметры конфигурации для подключения к базе данных и возвращает соединение
 func NewPgClient(cfg *config.PostgresConfig) (*gorm.DB, error) {
 	dsn := (&url.URL{
 		Scheme:   "postgres",

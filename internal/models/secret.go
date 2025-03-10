@@ -2,27 +2,28 @@ package models
 
 import "time"
 
+// SecretType тип секрета
 type SecretType string
 
+// Validate функция валидации типа секретов
 func (st SecretType) Validate() error {
 	switch st {
-	case Credentials, Text, Binary, PaymentCard, OTP:
+	case Credentials, Text, Binary, PaymentCard:
 		return nil
 	default:
 		return ErrSecretInvalidType
 	}
 }
 
-// Secret types
+// Типы секретов
 const (
-	Credentials SecretType = "credentials" // login and password
-	Text        SecretType = "text"        // text data
-	Binary      SecretType = "binary"      // any binary data
-	PaymentCard SecretType = "card"        // card data. include: card number, date (month, year), cvv code
-	OTP         SecretType = "otp"         // config string for otp
+	Credentials SecretType = "credentials" // Логин и пароль
+	Text        SecretType = "text"        // Текстовая информация
+	Binary      SecretType = "binary"      // Бинарная информация
+	PaymentCard SecretType = "card"        // Данные платежной карты
 )
 
-// Secret - secret model structure
+// Secret - модель описывающая структуру секрета
 type Secret struct {
 	ID          int        `gorm:"primary_key;auto_increment"`
 	Name        string     `gorm:"not null;size:32;index:,unique"`
@@ -34,6 +35,7 @@ type Secret struct {
 	CreatedAt   time.Time  `gorm:"autoCreateTime"`
 }
 
+// Validate функция валидации данных секрета
 func (s *Secret) Validate() error {
 	if s.Name == "" || len(s.Name) > 32 {
 		return ErrSecretInvalidName
@@ -47,11 +49,13 @@ func (s *Secret) Validate() error {
 	return nil
 }
 
+// CredentialSecret модель описывающая данные в секрете с типом Credentials
 type CredentialSecret struct {
 	Login    string `json:"login"`
 	Password string `json:"password"`
 }
 
+// PaymentCardSecret модель описывающая данные в секрете с типом PaymentCard
 type PaymentCardSecret struct {
 	Number      string `json:"number"`
 	ExpiryMonth int    `json:"expiry_month"`
@@ -59,14 +63,12 @@ type PaymentCardSecret struct {
 	CVV         string `json:"cvv"`
 }
 
+// TextSecret модель описывающая данные в секрете с типом Text
 type TextSecret struct {
 	Text string `json:"text"`
 }
 
+// BinarySecret модель описывающая данные в секрете с типом Binary
 type BinarySecret struct {
 	Binary string `json:"binary"`
-}
-
-type OTPSecret struct {
-	OTP string `json:"otp"`
 }

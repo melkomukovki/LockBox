@@ -2,7 +2,7 @@ package models
 
 import "context"
 
-// IUserRepository - user repository interface
+// IUserRepository - интерфейс описывающий необходимые методы для реализации репозитория
 type IUserRepository interface {
 	Create(ctx context.Context, user *User) (int, error)
 	GetById(ctx context.Context, id int) (*User, error)

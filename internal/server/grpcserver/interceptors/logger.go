@@ -3,10 +3,12 @@ package interceptors
 import (
 	"context"
 	"fmt"
+
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"github.com/rs/zerolog"
 )
 
+// InterceptorLogger перехватчик для логирования запросов к серверу
 func InterceptorLogger(l zerolog.Logger) logging.Logger {
 	return logging.LoggerFunc(func(ctx context.Context, lvl logging.Level, msg string, fields ...any) {
 		l := l.With().Fields(fields).Logger()

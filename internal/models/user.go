@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-// User - user model
+// User - модель описания пользователя
 type User struct {
 	ID        int       `gorm:"primary_key;auto_increment"`
 	Username  string    `gorm:"not null;unique;size:32"`

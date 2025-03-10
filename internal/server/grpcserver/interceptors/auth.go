@@ -2,22 +2,28 @@ package interceptors
 
 import (
 	"context"
-	"github.com/melkomukovki/LockBox/pkg/auth"
+	"strings"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-	"strings"
+
+	"github.com/melkomukovki/LockBox/pkg/auth"
 )
 
+// AuthInterceptor структура перехватчика авторизации пользователя
 type AuthInterceptor struct {
 	jwtManager auth.JWTManager
 }
 
+// NewAuthInterceptor конструктор для получения экземпляра перехватчика
 func NewAuthInterceptor(jwtManager auth.JWTManager) *AuthInterceptor {
 	return &AuthInterceptor{jwtManager: jwtManager}
 }
 
+// UnaryInterceptor проверяет содержимое метаданных в запросе на наличие JWT access токена
+// Ожидаемый формат "authorization": "Bearer {access_token}"
 func (a *AuthInterceptor) UnaryInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		if strings.Contains(info.FullMethod, "SecretService") {
