@@ -12,7 +12,7 @@ import (
 	models "github.com/melkomukovki/LockBox/internal/models"
 )
 
-// MockISecretRepository is a mock of ISecretRepository interface.
+// MockISecretRepository is a mock of SecretRepository interface.
 type MockISecretRepository struct {
 	ctrl     *gomock.Controller
 	recorder *MockISecretRepositoryMockRecorder

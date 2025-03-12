@@ -6,18 +6,18 @@ import (
 
 	"github.com/urfave/cli/v3"
 
-	"github.com/melkomukovki/LockBox/internal/client/service"
+	"github.com/melkomukovki/LockBox/internal/client/ui"
 )
 
 // App структура приложения
 type App struct {
 	cmd           *cli.Command
-	userService   service.IUserService
-	secretService service.ISecretService
+	userService   *ui.UserHandler
+	secretService *ui.SecretHandler
 }
 
 // NewApp конструктор для получения экземпляра приложения
-func NewApp(uService service.IUserService, sService service.ISecretService) *App {
+func NewApp(userHandler *ui.UserHandler, secretHandler *ui.SecretHandler) *App {
 	return &App{
 		cmd: &cli.Command{
 			Commands: []*cli.Command{
@@ -30,7 +30,7 @@ func NewApp(uService service.IUserService, sService service.ISecretService) *App
 							Name:  "register",
 							Usage: "SignUp",
 							Action: func(ctx context.Context, cmd *cli.Command) error {
-								uService.Register(ctx)
+								userHandler.SignUp(ctx)
 								return nil
 							},
 						},
@@ -38,7 +38,7 @@ func NewApp(uService service.IUserService, sService service.ISecretService) *App
 							Name:  "login",
 							Usage: "SignIn",
 							Action: func(ctx context.Context, cmd *cli.Command) error {
-								uService.Login(ctx)
+								userHandler.SignIn(ctx)
 								return nil
 							},
 						},
@@ -62,7 +62,7 @@ func NewApp(uService service.IUserService, sService service.ISecretService) *App
 							Name:  "list",
 							Usage: "List of secrets",
 							Action: func(ctx context.Context, cmd *cli.Command) error {
-								sService.List(ctx, cmd.String("token"))
+								secretHandler.List(ctx, cmd.String("token"))
 								return nil
 							},
 						},
@@ -70,7 +70,7 @@ func NewApp(uService service.IUserService, sService service.ISecretService) *App
 							Name:  "get",
 							Usage: "Get secret",
 							Action: func(ctx context.Context, cmd *cli.Command) error {
-								sService.Get(ctx, cmd.String("token"))
+								secretHandler.Get(ctx, cmd.String("token"))
 								return nil
 							},
 						},
@@ -78,7 +78,7 @@ func NewApp(uService service.IUserService, sService service.ISecretService) *App
 							Name:  "delete",
 							Usage: "Delete secret",
 							Action: func(ctx context.Context, cmd *cli.Command) error {
-								sService.Delete(ctx, cmd.String("token"))
+								secretHandler.Delete(ctx, cmd.String("token"))
 								return nil
 							},
 						},
@@ -86,7 +86,7 @@ func NewApp(uService service.IUserService, sService service.ISecretService) *App
 							Name:  "add",
 							Usage: "Add secret",
 							Action: func(ctx context.Context, cmd *cli.Command) error {
-								sService.Add(ctx, cmd.String("token"))
+								secretHandler.Create(ctx, cmd.String("token"))
 								return nil
 							},
 						},

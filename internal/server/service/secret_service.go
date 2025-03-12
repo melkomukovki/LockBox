@@ -2,13 +2,14 @@ package service
 
 import (
 	"context"
+
 	"github.com/melkomukovki/LockBox/internal/models"
 )
 
-var _ models.ISecretService = (*SecretService)(nil)
+var _ models.SecretService = (*SecretService)(nil)
 
 type SecretService struct {
-	repo models.ISecretRepository
+	repo models.SecretRepository
 }
 
 func (s *SecretService) CreateSecret(ctx context.Context, secret *models.Secret) (int, error) {
@@ -66,6 +67,6 @@ func (s *SecretService) GetAllSecrets(ctx context.Context, userId int) ([]models
 	return s.repo.GetByUserId(ctx, userId)
 }
 
-func NewSecretService(repo models.ISecretRepository) *SecretService {
+func NewSecretService(repo models.SecretRepository) *SecretService {
 	return &SecretService{repo: repo}
 }

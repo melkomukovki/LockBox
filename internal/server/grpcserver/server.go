@@ -26,7 +26,7 @@ type Server struct {
 }
 
 // New конструктор для получения экземпляра сервера
-func New(cfg *config.ServerConfig, userService models.IUserService, secretService models.ISecretService, jwtManager auth.JWTManager) *Server {
+func New(cfg *config.ServerConfig, userService models.UserService, secretService models.SecretService, jwtManager auth.JWTManager) *Server {
 
 	authInterceptor := interceptors.NewAuthInterceptor(jwtManager)
 

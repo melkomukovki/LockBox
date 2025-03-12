@@ -12,7 +12,7 @@ import (
 	models "github.com/melkomukovki/LockBox/internal/models"
 )
 
-// MockIUserRepository is a mock of IUserRepository interface.
+// MockIUserRepository is a mock of UserRepository interface.
 type MockIUserRepository struct {
 	ctrl     *gomock.Controller
 	recorder *MockIUserRepositoryMockRecorder

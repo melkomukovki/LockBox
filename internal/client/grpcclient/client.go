@@ -12,21 +12,6 @@ import (
 	"github.com/melkomukovki/LockBox/api/pb"
 )
 
-// IGRPCClient интерфейс, методы доступные клиенту для взаимодействия
-type IGRPCClient interface {
-	SignIn(ctx context.Context, login, password string) (*pb.SignInResponse, error)
-	SignUp(ctx context.Context, login, password string) (*pb.SignUpResponse, error)
-	SecretsList(ctx context.Context, token string) (*pb.ListResponse, error)
-	SecretsGet(ctx context.Context, token string, id int64) (*pb.GetResponse, error)
-	SecretsDelete(ctx context.Context, token string, id int64) (*pb.DeleteResponse, error)
-	SecretsAdd(ctx context.Context, token string, secret *pb.Secret) (*pb.StoreResponse, error)
-}
-
-// Проверка имплементации
-var (
-	_ IGRPCClient = (*Client)(nil)
-)
-
 // Client - структура GRPC клиента
 type Client struct {
 	conn          *grpc.ClientConn

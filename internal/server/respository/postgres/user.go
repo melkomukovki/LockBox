@@ -3,34 +3,31 @@ package postgres
 import (
 	"context"
 	"errors"
-	"github.com/melkomukovki/LockBox/internal/models"
+
+	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
+
+	"github.com/melkomukovki/LockBox/internal/models"
 )
 
-var _ models.IUserRepository = (*UserRepository)(nil)
+const pgUniqueViolation = "23505"
+
+var _ models.UserRepository = (*UserRepository)(nil)
 
 type UserRepository struct {
 	db *gorm.DB
 }
 
 func (u *UserRepository) Create(ctx context.Context, user *models.User) (int, error) {
-	tx := u.db.WithContext(ctx).Begin()
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-		}
-	}()
-
-	if err := tx.Create(user).Error; err != nil {
-		tx.Rollback()
-
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+	if err := u.db.WithContext(ctx).Create(user).Error; err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == pgUniqueViolation {
 			return 0, models.ErrUserAlreadyExists
 		}
 		return 0, err
 	}
 
-	return user.ID, tx.Commit().Error
+	return user.ID, nil
 }
 
 func (u *UserRepository) GetById(ctx context.Context, id int) (*models.User, error) {

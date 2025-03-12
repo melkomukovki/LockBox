@@ -2,8 +2,8 @@ package models
 
 import "context"
 
-// ISecretRepository - интерфейс описывающий необходимые методы для реализации репозитория
-type ISecretRepository interface {
+// SecretRepository - интерфейс описывающий необходимые методы для реализации репозитория
+type SecretRepository interface {
 	Create(ctx context.Context, secret *Secret) (int, error)
 	Delete(ctx context.Context, secretId int) error
 	Update(ctx context.Context, secret *Secret) error

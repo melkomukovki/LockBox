@@ -4,18 +4,20 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
+
 	"github.com/melkomukovki/LockBox/internal/models"
 	"github.com/melkomukovki/LockBox/internal/server/config"
 	"github.com/melkomukovki/LockBox/internal/server/grpcserver"
 	"github.com/melkomukovki/LockBox/internal/server/respository/postgres"
 	"github.com/melkomukovki/LockBox/internal/server/service"
 	"github.com/melkomukovki/LockBox/pkg/auth"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 )
 
 const timeFormat = "02/Jan/2006 15:04:05 -0700"
@@ -107,20 +109,19 @@ func printInfo() {
 }
 
 func setLogLevel(level string) {
-	switch level {
-	case "debug":
-		zerolog.SetGlobalLevel(zerolog.DebugLevel)
-	case "info":
+	logLevel := map[string]zerolog.Level{
+		"debug": zerolog.DebugLevel,
+		"info":  zerolog.InfoLevel,
+		"warn":  zerolog.WarnLevel,
+		"error": zerolog.ErrorLevel,
+		"fatal": zerolog.FatalLevel,
+		"panic": zerolog.PanicLevel,
+	}
+
+	l, ok := logLevel[level]
+	if ok {
+		zerolog.SetGlobalLevel(l)
+	} else {
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)
-	case "warn":
-		zerolog.SetGlobalLevel(zerolog.WarnLevel)
-	case "error":
-		zerolog.SetGlobalLevel(zerolog.ErrorLevel)
-	case "fatal":
-		zerolog.SetGlobalLevel(zerolog.FatalLevel)
-	case "panic":
-		zerolog.SetGlobalLevel(zerolog.PanicLevel)
-	default:
-		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	}
 }

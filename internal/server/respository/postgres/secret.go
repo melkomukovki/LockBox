@@ -6,7 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var _ models.ISecretRepository = (*SecretRepository)(nil)
+var _ models.SecretRepository = (*SecretRepository)(nil)
 
 type SecretRepository struct {
 	db *gorm.DB

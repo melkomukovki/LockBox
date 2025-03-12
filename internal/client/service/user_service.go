@@ -2,57 +2,42 @@ package service
 
 import (
 	"context"
-	"fmt"
-	"log"
+	"errors"
 
 	"github.com/melkomukovki/LockBox/internal/client/grpcclient"
 )
 
 // UserService структура User сервиса
 type UserService struct {
-	conn grpcclient.IGRPCClient
+	conn *grpcclient.Client
 }
 
 // Login функция для аутентификации пользователя
-func (u UserService) Login(ctx context.Context) {
-	fmt.Println("\tLogin `Page`!")
-	login := inputString("Login > ")
-	password := inputString("Password > ")
+func (u *UserService) Login(ctx context.Context, login, password string) (string, error) {
 
 	resp, err := u.conn.SignIn(ctx, login, password)
 	if err != nil {
-		fmt.Printf("Failed to SignIn: %v\n", err)
-		return
+		return "", err
 	}
 
-	fmt.Printf("SignIn Success! Access Token: %s\n", resp.AccessToken)
+	return resp.AccessToken, nil
 }
 
 // Register функция для регистрации пользователя
-func (u UserService) Register(ctx context.Context) {
-	fmt.Println("\tRegister `Page`!")
-	login := inputString("Login > ")
-	password := inputString("Password > ")
-	confirmPassword := inputString("ConfirmPassword > ")
-
-	if password != confirmPassword {
-		fmt.Printf("Passwords do not match!\n")
-		return
-	}
+func (u *UserService) Register(ctx context.Context, login, password string) (string, error) {
 
 	resp, err := u.conn.SignUp(ctx, login, password)
 	if err != nil {
-		fmt.Printf("Failed to SignUp: %v\n", err)
-		return
+		return "", err
 	}
 
-	fmt.Printf("SignUp Success! Response message: %s\n", resp.Message)
+	return resp.Message, nil
 }
 
 // NewUserService конструктор для получения экземпляра User сервиса
-func NewUserService(conn grpcclient.IGRPCClient) IUserService {
+func NewUserService(conn *grpcclient.Client) (*UserService, error) {
 	if conn == nil {
-		log.Fatal("grpc  client must not be nil")
+		return nil, errors.New("grpc client must not be nil")
 	}
-	return &UserService{conn: conn}
+	return &UserService{conn: conn}, nil
 }

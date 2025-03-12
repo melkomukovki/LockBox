@@ -16,12 +16,12 @@ import (
 // UserController описание структуры контроллера
 type UserController struct {
 	pb.UnimplementedUserServiceServer
-	service    models.IUserService
+	service    models.UserService
 	jwtManager auth.JWTManager
 }
 
 // NewUserController конструктор для получения экземпляра контроллера
-func NewUserController(service models.IUserService, jwtManager auth.JWTManager) *UserController {
+func NewUserController(service models.UserService, jwtManager auth.JWTManager) *UserController {
 	return &UserController{service: service, jwtManager: jwtManager}
 }
 

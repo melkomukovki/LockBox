@@ -3,13 +3,15 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/melkomukovki/LockBox/internal/client/app"
-	"github.com/melkomukovki/LockBox/internal/client/grpcclient"
-	"github.com/melkomukovki/LockBox/internal/client/service"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/melkomukovki/LockBox/internal/client/app"
+	"github.com/melkomukovki/LockBox/internal/client/grpcclient"
+	"github.com/melkomukovki/LockBox/internal/client/service"
+	"github.com/melkomukovki/LockBox/internal/client/ui"
 )
 
 const (
@@ -30,18 +32,30 @@ func main() {
 		serverAddress = defaultServerAddress
 	}
 
+	// Создаем grpc клиент
 	grpc, err := grpcclient.NewGRPCClient(serverAddress)
 	if err != nil {
 		log.Fatalf("cannot create grpc client: %v", err)
 	}
 
-	uService := service.NewUserService(grpc)
-	sService := service.NewSecretService(grpc)
+	// Сервисный слой
+	uService, err := service.NewUserService(grpc)
+	if err != nil {
+		log.Fatalf("cannot create user service: %v", err)
+	}
+	sService, err := service.NewSecretService(grpc)
+	if err != nil {
+		log.Fatalf("cannot create secret service: %v", err)
+	}
+
+	// Слой представления
+	userHandler := ui.NewUserHandler(uService)
+	secretHandler := ui.NewSecretHandler(sService)
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
-	client := app.NewApp(uService, sService)
+	client := app.NewApp(userHandler, secretHandler)
 	_ = client.Run(ctx, os.Args)
 }
 

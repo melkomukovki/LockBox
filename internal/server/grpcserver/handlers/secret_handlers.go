@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"fmt"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -14,24 +13,20 @@ import (
 // SecretController описание структуры контроллера
 type SecretController struct {
 	pb.UnimplementedSecretServiceServer
-	service models.ISecretService
+	service models.SecretService
 }
 
 // NewSecretController конструктор для получения Secret контроллера
-func NewSecretController(service models.ISecretService) *SecretController {
+func NewSecretController(service models.SecretService) *SecretController {
 	return &SecretController{service: service}
 }
 
 // Store - функция обработчик запросов на сохранение секретов
 func (s *SecretController) Store(ctx context.Context, request *pb.StoreRequest) (*pb.StoreResponse, error) {
-	userId, ok := ctx.Value("userId").(int)
-	if !ok {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	secret := &models.Secret{
 		Name:        request.Secret.Name,
-		UserID:      userId,
+		UserID:      ctx.Value("userId").(int),
 		Description: request.Secret.Description,
 		Type:        models.SecretType(request.Secret.Type),
 		Data:        request.Secret.Data,
@@ -47,11 +42,7 @@ func (s *SecretController) Store(ctx context.Context, request *pb.StoreRequest) 
 
 // List - функция обработчик для получения списка секретов пользователя
 func (s *SecretController) List(ctx context.Context, request *pb.ListRequest) (*pb.ListResponse, error) {
-	userId, ok := ctx.Value("userId").(int)
-	if !ok {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
-
+	userId := ctx.Value("userId").(int)
 	secrets, err := s.service.GetAllSecrets(ctx, userId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -73,10 +64,7 @@ func (s *SecretController) List(ctx context.Context, request *pb.ListRequest) (*
 
 // Delete - функция обработчик для запросов удаления секрета
 func (s *SecretController) Delete(ctx context.Context, request *pb.DeleteRequest) (*pb.DeleteResponse, error) {
-	userId, ok := ctx.Value("userId").(int)
-	if !ok {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
+	userId := ctx.Value("userId").(int)
 
 	if err := s.service.DeleteSecret(ctx, int(request.Id), userId); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -86,11 +74,6 @@ func (s *SecretController) Delete(ctx context.Context, request *pb.DeleteRequest
 
 // Update - функция обработчик для запросов обновления секрета
 func (s *SecretController) Update(ctx context.Context, request *pb.UpdateRequest) (*pb.UpdateResponse, error) {
-	userId, ok := ctx.Value("userId").(int)
-	if !ok {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
-
 	secret := &models.Secret{
 		ID:          int(request.Secret.Id),
 		Name:        request.Secret.Name,
@@ -99,6 +82,7 @@ func (s *SecretController) Update(ctx context.Context, request *pb.UpdateRequest
 		Data:        request.Secret.Data,
 	}
 
+	userId := ctx.Value("userId").(int)
 	if err := s.service.UpdateSecret(ctx, secret, userId); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -107,12 +91,7 @@ func (s *SecretController) Update(ctx context.Context, request *pb.UpdateRequest
 
 // Get - функция обработчик для получения информация по секрету
 func (s *SecretController) Get(ctx context.Context, request *pb.GetRequest) (*pb.GetResponse, error) {
-	userId, ok := ctx.Value("userId").(int)
-	if !ok {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
-
-	fmt.Printf("Request id: %d\n", request.Id)
+	userId := ctx.Value("userId").(int)
 	secret, err := s.service.GetSecret(ctx, int(request.Id), userId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
